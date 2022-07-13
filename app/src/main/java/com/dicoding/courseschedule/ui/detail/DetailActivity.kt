@@ -5,11 +5,14 @@ import android.view.Menu
 import android.view.MenuItem
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.ViewModelProvider
 import com.dicoding.courseschedule.R
 import com.dicoding.courseschedule.data.Course
+import com.dicoding.courseschedule.databinding.ActivityDetailBinding
 import com.dicoding.courseschedule.util.DayName.Companion.getByNumber
 
 class DetailActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityDetailBinding
 
     companion object {
         const val COURSE_ID = "courseId"
@@ -19,10 +22,17 @@ class DetailActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_detail)
+        binding = ActivityDetailBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
         val courseId = intent.getIntExtra(COURSE_ID, 0)
         val factory = DetailViewModelFactory.createFactory(this, courseId)
+        viewModel = ViewModelProvider(this, factory)[DetailViewModel::class.java]
+
+        viewModel.course.observe(this) { course ->
+            showCourseDetail(course)
+        }
 
 
     }
@@ -32,6 +42,13 @@ class DetailActivity : AppCompatActivity() {
             val timeString = getString(R.string.time_format)
             val dayName = getByNumber(day)
             val timeFormat = String.format(timeString, dayName, startTime, endTime)
+
+            binding.tvCourseName.text = course.courseName
+            binding.tvTime.text = timeFormat
+            binding.tvLecturer.text = course.lecturer
+            binding.tvNote.text = course.note
+
+
 
         }
     }
